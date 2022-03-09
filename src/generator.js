@@ -3,7 +3,12 @@ function generator(lim) {
     const comps = [];
 
     for (let i = 0; i < Math.ceil(Math.random() * 4 + 3); ++i) {
-        comps.push(Math.ceil(1 + Math.random() * 5 * Math.log(lim)))
+        let temp = Math.ceil(1 + Math.random() * 5 * Math.log(lim));
+        if (temp == target) {
+            i -= 1;
+        } else {
+            comps.push(temp);
+        }
     }
     
     return [target, comps]

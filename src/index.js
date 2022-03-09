@@ -11,15 +11,25 @@ client.once('ready', () => {
     console.log('Ready!');
 });
 
-let controller = new Controller();
+const controllers = {};
 
 client.on("messageCreate", (message) => {
+    let controller;
+    if (controllers[message.guild.id]) {
+        controller = controllers[message.guild.id]
+    } else {
+        controller = new Controller(message.guild.id);
+        controllers[message.guild.id] = controller;
+    }
+
     if (message.content.toLowerCase().slice(0, ".ollybot config".length) == ".ollybot config") {
         let command = message.content.toLowerCase().slice(".ollybot config".length, message.content.length);
-        if (command.includes("time limit")) {
+        if (command.trim().length == 0) {
+            message.reply(controller.fetchConfig());
+        } else if (command.includes("time limit")) {
             let val = Number(command.slice(command.lastIndexOf("time limit") + "time limit".length, command.length));
             if (val) {
-                controller.updateConfig("timeLimit", val);
+                controller.updateConfig("timeLimit", val * 1000);
             } else {
                 message.reply("Invalid value!");
             }
@@ -37,6 +47,8 @@ client.on("messageCreate", (message) => {
             } else {
                 message.reply("Invalid value!");
             }
+        } else {
+            message.reply("Unknown command!");
         }
     }
 
@@ -55,9 +67,10 @@ client.on("messageCreate", (message) => {
         game.finishCallback = () => {
             collector.stop();
 
+            let playerPoints = controller.fetchPlayerPoints();
             let str = "Game ended!\n\n";
             for (let i = 0; i < game.finalRanks.length; ++i) {
-                str += `${i + 1}. ${client.users.cache.find(user => user.id == game.finalRanks[i].ID)}`;
+                str += `${i + 1}. ${client.users.cache.find(user => user.id == game.finalRanks[i].ID)}\tPoints: ${playerPoints[game.finalRanks[i].ID]}`;
                 if (i < game.finalRanks.length - 1) {
                     str += "\n";
                 }

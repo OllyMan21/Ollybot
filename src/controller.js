@@ -8,14 +8,35 @@ const playerDataFileName = './player_data.json';
 const playerData = require(playerDataFileName);
 
 class Controller {
-    constructor() {
+    constructor(guild) {
+        this.guild = guild;
         this.gameOn = false;
+
+        if (!config[guild]) {
+            config[guild] = {"limit": 100, "timeLimit": 30000, "tolerance": 0.1};
+            fs.writeFile(configFileName, JSON.stringify(config), function writeJSON(err) {
+                if (err) return console.log(err);
+            });
+        }
+        if (!playerData[guild]) {
+            playerData[guild] = {};
+            fs.writeFile(playerDataFileName, JSON.stringify(playerData), function writeJSON(err) {
+                if (err) return console.log(err);
+            });
+        }
+    }
+
+    fetchPlayerPoints() {
+        return playerData[this.guild];
+    }
+
+    fetchConfig() {
+        return JSON.stringify(config[this.guild]);
     }
 
     updateConfig(key, value) {
-        console.log(key, value);
-        if (typeof(config[key]) == typeof(value) && value >= 0) {
-            config[key] = value;
+        if (typeof(config[this.guild][key]) == typeof(value) && value >= 0 && value <= 60000) {
+            config[this.guild][key] = value;
             fs.writeFile(configFileName, JSON.stringify(config), function writeJSON(err) {
                 if (err) return console.log(err);
             });
@@ -38,13 +59,13 @@ class Controller {
 class Game {
     constructor(controller) {
         this.controller = controller;
-        [this.target, this.comps] = generator(config.limit)
+        [this.target, this.comps] = generator(config[this.controller.guild].limit);
         this.rankings = {};
         this.finishCallback = null;
         this.finalRanks = [];
         this.expressions = [];
 
-        setTimeout(this.finishGame.bind(this), config.timeLimit);
+        setTimeout(this.finishGame.bind(this), config[this.controller.guild].timeLimit);
     }
 
     checkExpr(expr) {
@@ -108,7 +129,7 @@ class Game {
         });
 
         for (let d of sortedDiffs) {
-            if (d > config.tolerance * config.limit) {
+            if (d > config[this.controller.guild].tolerance * config[this.controller.guild].limit) {
                 break;
             }
             this.finalRanks.push(...ranks[d].sort((a, b) => {
@@ -126,10 +147,10 @@ class Game {
             if (i >= 3) {break;}
 
 
-            if (playerData[this.finalRanks[i].ID]) {
-                playerData[this.finalRanks[i].ID] += 5 - i * 2;
+            if (playerData[this.controller.guild][this.finalRanks[i].ID]) {
+                playerData[this.controller.guild][this.finalRanks[i].ID] += 5 - i * 2;
             } else {
-                playerData[this.finalRanks[i].ID] = 5 - i * 2;
+                playerData[this.controller.guild][this.finalRanks[i].ID] = 5 - i * 2;
             }
         }
 
