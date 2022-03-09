@@ -20,7 +20,7 @@ client.on("messageCreate", (message) => {
             message.reply("Game already running!");
             return;
         } else {
-            message.channel.send(`Try to create ${game.target} using the numbers ${game.comps}!`);
+            message.channel.send(`Try to create ${game.target} using the numbers ${game.comps}`);
         }
 
         const filter = m => game.checkExpr(m.content);
