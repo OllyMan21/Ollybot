@@ -79,10 +79,12 @@ client.on("messageCreate", (message) => {
         game.finishCallback = () => {
             collector.stop();
 
-            let playerPoints = controller.fetchPlayerPoints();
-            let str = "Game ended!\n\n";
+            let str = "Game ended!\n";
+            if (game.winExpr) {
+                str += `Winning expression:\t${game.winExpr}\n\n`;
+            }
             for (let i = 0; i < game.finalRanks.length; ++i) {
-                str += `${i + 1}. ${client.users.cache.find(user => user.id == game.finalRanks[i].ID)}\tPoints: ${playerPoints[game.finalRanks[i].ID]}`;
+                str += `${i + 1}. ${client.users.cache.find(user => user.id == game.finalRanks[i].ID)}`;
                 if (i < game.finalRanks.length - 1) {
                     str += "\n";
                 }
@@ -97,13 +99,14 @@ client.on("messageCreate", (message) => {
             switch(status) {
                 case 0:
                     const [exprEval, diff] = game.submitAns(m.author.id, m.createdTimestamp, m.content);
-                    m.reply(`\`\`\`Result: ${exprEval}\nDifference: ${diff}\`\`\``);
+                    m.channel.send(`<@${m.author.id}>\t\`Result: ${exprEval}\tDifference: ${diff}\``);
                     break;
                 case 1:
-                    m.reply("You either used a number that is not in the list or too many of the same number(s)!");
+                    m.channel.send(`<@${m.author.id}>\tYou either used a number that is not in the list or too many of the same number(s)!`);
                     break;
-                case 2:
-                    m.reply("That expression has already been used!");
+            }
+            if (m.deletable) {
+                m.delete();
             }
         });
     }

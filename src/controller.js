@@ -4,8 +4,6 @@ const math = require("mathjs");
 const fs = require("fs");
 const configFileName = './gameConfig.json';
 const config = require(configFileName);
-const playerDataFileName = './player_data.json';
-const playerData = require(playerDataFileName);
 
 class Controller {
     constructor(guild) {
@@ -18,16 +16,6 @@ class Controller {
                 if (err) return console.log(err);
             });
         }
-        if (!playerData[guild]) {
-            playerData[guild] = {};
-            fs.writeFile(playerDataFileName, JSON.stringify(playerData), function writeJSON(err) {
-                if (err) return console.log(err);
-            });
-        }
-    }
-
-    fetchPlayerPoints() {
-        return playerData[this.guild];
     }
 
     fetchConfig() {
@@ -63,7 +51,7 @@ class Game {
         this.rankings = {};
         this.finishCallback = null;
         this.finalRanks = [];
-        this.expressions = [];
+        this.winExpr = "";
 
         setTimeout(this.finishGame.bind(this), config[this.controller.guild].timeLimit);
     }
@@ -82,24 +70,19 @@ class Game {
     }
 
     checkAns(expr) {
-        expr = expr.replace(/\s/g, "");
         let nums = this.comps.slice();
+        console.log(expr);
         for (let num of expr.match(/\d+/g)) {
             if (!nums.includes(Number(num))) {
                 return {status: 1};
             }
             nums.splice(nums.indexOf(Number(num)), 1);
         }
-        if (this.expressions.includes(expr)) {
-            return {status: 2};
-        }
 
         return {status: 0};
     }
 
     submitAns(ID, time, expr) {
-        this.expressions.push(expr.replace(/\s/g, ""));
-
         const exprEval = math.evaluate(expr);
         const diff = Math.abs(this.target - math.evaluate(exprEval));
         if (this.rankings[ID]) {
@@ -108,7 +91,7 @@ class Game {
                 this.rankings[ID].time = time;
             }
         } else {
-            this.rankings[ID] = {diff: diff, time: time};
+            this.rankings[ID] = {diff: diff, time: time, expr: expr};
         }
 
         return [exprEval, diff];
@@ -140,20 +123,9 @@ class Game {
 
         this.controller.gameOn = false;
 
-        for (let i = 0; i < this.finalRanks.length; ++i) {
-            if (i >= 3) {break;}
-
-
-            if (playerData[this.controller.guild][this.finalRanks[i].ID]) {
-                playerData[this.controller.guild][this.finalRanks[i].ID] += 5 - i * 2;
-            } else {
-                playerData[this.controller.guild][this.finalRanks[i].ID] = 5 - i * 2;
-            }
+        if (this.finalRanks[0]) {
+            this.winExpr = this.rankings[this.finalRanks[0].ID].expr;
         }
-
-        fs.writeFile(playerDataFileName, JSON.stringify(playerData), function writeJSON(err) {
-            if (err) return console.log(err);
-        });
 
         if(this.finishCallback) {
             this.finishCallback();
