@@ -24,7 +24,7 @@ client.on("messageCreate", (message) => {
         }
 
         const filter = m => game.checkExpr(m.content);
-        const collector = message.channel.createMessageCollector({filter, time: 15000 });
+        const collector = message.channel.createMessageCollector({filter});
 
         game.finishCallback = () => {
             collector.stop();
