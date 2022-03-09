@@ -29,21 +29,33 @@ client.on("messageCreate", (message) => {
         } else if (command.includes("time limit")) {
             let val = Number(command.slice(command.lastIndexOf("time limit") + "time limit".length, command.length));
             if (val) {
-                controller.updateConfig("timeLimit", val * 1000);
+                if (controller.updateConfig("timeLimit", val * 1000)) {
+                    message.reply("Config updated!");
+                } else {
+                    message.reply("Config update failed. Please check parameters!");
+                }
             } else {
                 message.reply("Invalid value!");
             }
         } else if (command.includes("limit")) {
             let val = Number(command.slice(command.lastIndexOf("limit") + "limit".length, command.length));
             if (val) {
-                controller.updateConfig("limit", val);
+                if (controller.updateConfig("limit", val)) {
+                    message.reply("Config updated!");
+                } else {
+                    message.reply("Config update failed. Please check parameters!");
+                }
             } else {
                 message.reply("Invalid value!");
             }
         } else if (command.includes("tolerance")) {
             let val = Number(command.slice(command.lastIndexOf("tolerance") + "tolerance".length, command.length));
             if (val) {
-                controller.updateConfig("tolerance", val);
+                if (controller.updateConfig("tolerance", val)) {
+                    message.reply("Config updated!");
+                } else {
+                    message.reply("Config update failed. Please check parameters!");
+                }
             } else {
                 message.reply("Invalid value!");
             }
