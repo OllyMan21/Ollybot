@@ -91,8 +91,6 @@ class Game {
         this.controller.gameOn = false;
         this.gameOn = false;
 
-        console.log("poo");
-
         if(this.finishCallback) {
             this.finishCallback();
         }
