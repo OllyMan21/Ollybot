@@ -1,11 +1,28 @@
 const {generator} = require("./generator");
-const config = require("./gameConfig.json");
 const math = require("mathjs");
-const { exp } = require("mathjs");
+
+const fs = require("fs");
+const configFileName = './gameConfig.json';
+const config = require(configFileName);
+const playerDataFileName = './player_data.json';
+const playerData = require(playerDataFileName);
 
 class Controller {
     constructor() {
         this.gameOn = false;
+    }
+
+    updateConfig(key, value) {
+        console.log(key, value);
+        if (typeof(config[key]) == typeof(value) && value >= 0) {
+            config[key] = value;
+            fs.writeFile(configFileName, JSON.stringify(config), function writeJSON(err) {
+                if (err) return console.log(err);
+            });
+        } else {
+            return false;
+        }
+        return true;
     }
 
     startGame() {
@@ -20,12 +37,12 @@ class Controller {
 
 class Game {
     constructor(controller) {
-        this.gameOn = true;
         this.controller = controller;
         [this.target, this.comps] = generator(config.limit)
         this.rankings = {};
         this.finishCallback = null;
         this.finalRanks = [];
+        this.expressions = [];
 
         setTimeout(this.finishGame.bind(this), config.timeLimit);
     }
@@ -47,15 +64,20 @@ class Game {
         let nums = this.comps.slice();
         for (let num of expr.match(/\d+/g)) {
             if (!nums.includes(Number(num))) {
-                return false;
+                return {status: 1};
             }
             nums.splice(nums.indexOf(Number(num)), 1);
         }
+        if (this.expressions.includes(expr)) {
+            return {status: 2};
+        }
 
-        return true;
+        return {status: 0};
     }
 
     submitAns(ID, time, expr) {
+        this.expressions.push(expr);
+
         const exprEval = math.evaluate(expr);
         const diff = Math.abs(this.target - math.evaluate(exprEval));
         if (this.rankings[ID]) {
@@ -86,17 +108,34 @@ class Game {
         });
 
         for (let d of sortedDiffs) {
+            if (d > config.tolerance * config.limit) {
+                break;
+            }
             this.finalRanks.push(...ranks[d].sort((a, b) => {
                 return a.time - b.time;
             }));
         }
 
         this.controller.gameOn = false;
-        this.gameOn = false;
 
         if(this.finishCallback) {
             this.finishCallback();
         }
+
+        for (let i = 0; i < this.finalRanks.length; ++i) {
+            if (i >= 3) {break;}
+
+
+            if (playerData[this.finalRanks[i].ID]) {
+                playerData[this.finalRanks[i].ID] += 5 - i * 2;
+            } else {
+                playerData[this.finalRanks[i].ID] = 5 - i * 2;
+            }
+        }
+
+        fs.writeFile(playerDataFileName, JSON.stringify(playerData), function writeJSON(err) {
+            if (err) return console.log(err);
+        });
     }
 }
 

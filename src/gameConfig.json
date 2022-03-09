@@ -1,4 +1,1 @@
-{
-    "limit": 1000,
-    "timeLimit": 20000
-}
+{"limit":1000,"timeLimit":100,"tolerance":0.1}

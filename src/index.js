@@ -14,7 +14,33 @@ client.once('ready', () => {
 let controller = new Controller();
 
 client.on("messageCreate", (message) => {
-    if (message.content.toLowerCase() == "math bot go") {
+    if (message.content.toLowerCase().slice(0, ".ollybot config".length) == ".ollybot config") {
+        let command = message.content.toLowerCase().slice(".ollybot config".length, message.content.length);
+        if (command.includes("time limit")) {
+            let val = Number(command.slice(command.lastIndexOf("time limit") + "time limit".length, command.length));
+            if (val) {
+                controller.updateConfig("timeLimit", val);
+            } else {
+                message.reply("Invalid value!");
+            }
+        } else if (command.includes("limit")) {
+            let val = Number(command.slice(command.lastIndexOf("limit") + "limit".length, command.length));
+            if (val) {
+                controller.updateConfig("limit", val);
+            } else {
+                message.reply("Invalid value!");
+            }
+        } else if (command.includes("tolerance")) {
+            let val = Number(command.slice(command.lastIndexOf("tolerance") + "tolerance".length, command.length));
+            if (val) {
+                controller.updateConfig("tolerance", val);
+            } else {
+                message.reply("Invalid value!");
+            }
+        }
+    }
+
+    if (message.content.toLowerCase() == ".ollybot go") {
         const game = controller.startGame();
         if (!game) {
             message.reply("Game already running!");
@@ -42,11 +68,17 @@ client.on("messageCreate", (message) => {
         }
 
         collector.on("collect", (m) => {
-            if (game.checkAns(m.content)) {
-                const [exprEval, diff] = game.submitAns(m.author.id, m.createdTimestamp, m.content);
-                m.reply(`\`\`\`Result: ${exprEval}\nDifference: ${diff}\`\`\``);
-            } else {
-                m.reply("You either used a number that is not in the list or too many of the same number(s)!");
+            let status = game.checkAns(m.content).status;
+            switch(status) {
+                case 0:
+                    const [exprEval, diff] = game.submitAns(m.author.id, m.createdTimestamp, m.content);
+                    m.reply(`\`\`\`Result: ${exprEval}\nDifference: ${diff}\`\`\``);
+                    break;
+                case 1:
+                    m.reply("You either used a number that is not in the list or too many of the same number(s)!");
+                    break;
+                case 2:
+                    m.reply("That expression has already been used!");
             }
         });
     }
