@@ -31,6 +31,9 @@ class Game {
     }
 
     checkExpr(expr) {
+        if (/[a-zA-Z]/.test(expr)) {
+            return false;
+        }
         try {
             math.evaluate(expr);
         } 
