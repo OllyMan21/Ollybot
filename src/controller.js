@@ -82,6 +82,7 @@ class Game {
     }
 
     checkAns(expr) {
+        expr = expr.replace(/\s/g, "");
         let nums = this.comps.slice();
         for (let num of expr.match(/\d+/g)) {
             if (!nums.includes(Number(num))) {
@@ -97,7 +98,7 @@ class Game {
     }
 
     submitAns(ID, time, expr) {
-        this.expressions.push(expr);
+        this.expressions.push(expr.replace(/\s/g, ""));
 
         const exprEval = math.evaluate(expr);
         const diff = Math.abs(this.target - math.evaluate(exprEval));
@@ -139,10 +140,6 @@ class Game {
 
         this.controller.gameOn = false;
 
-        if(this.finishCallback) {
-            this.finishCallback();
-        }
-
         for (let i = 0; i < this.finalRanks.length; ++i) {
             if (i >= 3) {break;}
 
@@ -157,6 +154,10 @@ class Game {
         fs.writeFile(playerDataFileName, JSON.stringify(playerData), function writeJSON(err) {
             if (err) return console.log(err);
         });
+
+        if(this.finishCallback) {
+            this.finishCallback();
+        }
     }
 }
 
