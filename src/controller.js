@@ -82,12 +82,12 @@ class Game {
         }
 
         let sortedDiffs = Object.keys(ranks).sort((a, b) => {
-            b - a;
+            return a - b;
         });
 
         for (let d of sortedDiffs) {
             this.finalRanks.push(...ranks[d].sort((a, b) => {
-                a.time - b.time;
+                return a.time - b.time;
             }));
         }
 

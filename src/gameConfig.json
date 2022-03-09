@@ -1,4 +1,4 @@
 {
     "limit": 1000,
-    "timeLimit": 60000
+    "timeLimit": 20000
 }

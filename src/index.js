@@ -46,7 +46,7 @@ client.on("messageCreate", (message) => {
                 const [exprEval, diff] = game.submitAns(m.author.id, m.createdTimestamp, m.content);
                 m.reply(`\`\`\`Result: ${exprEval}\nDifference: ${diff}\`\`\``);
             } else {
-                message.reply("You either used a number that is not in the list or too many of the same number(s)!");
+                m.reply("You either used a number that is not in the list or too many of the same number(s)!");
             }
         });
     }
