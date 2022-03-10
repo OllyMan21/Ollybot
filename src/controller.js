@@ -71,7 +71,6 @@ class Game {
 
     checkAns(expr) {
         let nums = this.comps.slice();
-        console.log(expr);
         for (let num of expr.match(/\d+/g)) {
             if (!nums.includes(Number(num))) {
                 return {status: 1};
